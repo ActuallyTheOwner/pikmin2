@@ -701,13 +701,11 @@ void GameState::onMovieDone(SingleGameSection* game, MovieConfig* config, u32, u
 	}
 
 	//After finding the red onion
-	if (config->is("x03_find_red_onyon")) {
-		gameSystem->mTimeMgr->mDayCount = -2;
-		
-	// 	if (!playData->isDemoFlag(DEMO_Pluck_First_Pikmin)) {
-	// 		game->enableTimer(20.0f, DEMOTIMER_Piki_Seed_In_Ground);
-	// 	}
-	}
+	// if (config->is("x03_find_red_onyon")) {
+	// // 	if (!playData->isDemoFlag(DEMO_Pluck_First_Pikmin)) {
+	// // 		game->enableTimer(20.0f, DEMOTIMER_Piki_Seed_In_Ground);
+	// // 	}
+	// }
 
 	// After first globe day end (paying the debt overpowers its day ending... with day ending)
 	if (config->is("g32_get_map")) {
