@@ -27,11 +27,9 @@
 #include "nans.h"
 #include "utilityU.h"
 #include "Game/NaviState.h"
-
-#define LOUIE_START_X   (-1260.0f)
-#define LOUIE_START_Y   (-80.0f)
-#define LOUIE_START_Z   (4350.0f)
-#define LOUIE_START_DIR (7.6969025f) // in radians (even though this is above tau lol). it's like 81 degrees.
+//OG units
+//-357.18.0f	0.0f	2900.0f Olimar origin txt
+//-1260.0f	   -80.0f 	4350.0f Louie normally hard coded
 
 static const u32 padding[]    = { 0, 0, 0 };
 static const char className[] = "SingleGS_Game";
@@ -168,6 +166,9 @@ void GameState::init(SingleGameSection* game, StateArg* arg)
 			if (playData->hasContainer(i) && GameStat::getAllPikmins(i) == 0) {
 				playData->mPikiContainer.getColorSum(i);
 				noPikisLeft = true;
+				//New code to allow switching as louie if all pikmin die
+				playData->setDemoFlag(DEMO_Unlock_Captain_Switch);
+				playData->isDemoFlag(DEMO_Reunite_Captains);
 				break;
 			}
 		}
@@ -363,24 +364,24 @@ void GameState::on_demo_timer(SingleGameSection* game, u32 id)
 		moviePlayArg.mAngle  = navi->getFaceDir();
 		moviePlayer->play(moviePlayArg);
 		playData->setDemoFlag(DEMO_Unlock_Captain_Switch);
-		game->disableTimer(DEMOTIMER_Unlock_Switch_To_Louie);
+	 	game->disableTimer(DEMOTIMER_Unlock_Switch_To_Louie);
 	}
 	if (id == DEMOTIMER_Piki_Seed_In_Ground) {
-		if (!playData->isDemoFlag(DEMO_Pluck_First_Pikmin)) {
-			ItemPikihead::Item* seed = nullptr;
-			Iterator<ItemPikihead::Item> iterator(ItemPikihead::mgr);
-			CI_LOOP(iterator)
-			{
-				seed = *iterator;
-				break;
-			}
-			P2ASSERTLINE(1138, seed);
-			MoviePlayArg moviePlayArg("g01_pick_me", nullptr, game->mMovieFinishCallback, 0);
-			moviePlayArg.mOrigin = seed->getPosition();
-			moviePlayArg.mAngle  = seed->getFaceDir();
-			moviePlayer->play(moviePlayArg);
-			playData->setDemoFlag(DEMO_Pluck_First_Pikmin);
-		}
+		// if (!playData->isDemoFlag(DEMO_Pluck_First_Pikmin)) {
+		// 	ItemPikihead::Item* seed = nullptr;
+		// 	Iterator<ItemPikihead::Item> iterator(ItemPikihead::mgr);
+		// 	CI_LOOP(iterator)
+		// 	{
+		// 		seed = *iterator;
+		// 		break;
+		// 	}
+		// 	P2ASSERTLINE(1138, seed);
+		// 	MoviePlayArg moviePlayArg("g01_pick_me", nullptr, game->mMovieFinishCallback, 0);
+		// 	moviePlayArg.mOrigin = seed->getPosition();
+		// 	moviePlayArg.mAngle  = seed->getFaceDir();
+		// 	moviePlayer->play(moviePlayArg);
+		// 	playData->setDemoFlag(DEMO_Pluck_First_Pikmin);
+		// }
 		game->disableTimer(DEMOTIMER_Piki_Seed_In_Ground);
 	} else if (id == DEMOTIMER_Camera_Tutorial) {
 		if (!playData->isDemoFlag(DEMO_UNUSED_Camera_Demo)) {
@@ -434,12 +435,12 @@ void GameState::exec(SingleGameSection* game)
 
 	game->updateMainMapScreen();
 
-	// Check starting the "you appear lost" cutscene timer
-	if (GameStat::getMapPikmins(AllPikminCalcs) >= 15 && moviePlayer->mDemoState == DEMOSTATE_Inactive
-	    && !playData->isDemoFlag(DEMO_You_Appear_Lost) && playData->hasBootContainer(Red)) {
-		playData->setDemoFlag(DEMO_You_Appear_Lost);
-		game->enableTimer(180.0f, DEMOTIMER_YouAppearLost);
-	}
+	// // Check starting the "you appear lost" cutscene timer
+	// if (GameStat::getMapPikmins(AllPikminCalcs) >= 15 && moviePlayer->mDemoState == DEMOSTATE_Inactive
+	//     && !playData->isDemoFlag(DEMO_You_Appear_Lost) && playData->hasBootContainer(Red)) {
+	// 	playData->setDemoFlag(DEMO_You_Appear_Lost);
+	// 	game->enableTimer(180.0f, DEMOTIMER_YouAppearLost);
+	// }
 
 	if (moviePlayer->mDemoState == DEMOSTATE_Inactive && needRepayDemo()) {
 		startRepayDemo();
@@ -699,11 +700,13 @@ void GameState::onMovieDone(SingleGameSection* game, MovieConfig* config, u32, u
 		gameStart(game);
 	}
 
-	// After finding the red onion
+	//After finding the red onion
 	if (config->is("x03_find_red_onyon")) {
-		if (!playData->isDemoFlag(DEMO_Pluck_First_Pikmin)) {
-			game->enableTimer(20.0f, DEMOTIMER_Piki_Seed_In_Ground);
-		}
+		gameSystem->mTimeMgr->mDayCount = -2;
+		
+	// 	if (!playData->isDemoFlag(DEMO_Pluck_First_Pikmin)) {
+	// 		game->enableTimer(20.0f, DEMOTIMER_Piki_Seed_In_Ground);
+	// 	}
 	}
 
 	// After first globe day end (paying the debt overpowers its day ending... with day ending)
@@ -731,10 +734,10 @@ void GameState::onMovieDone(SingleGameSection* game, MovieConfig* config, u32, u
 	if (config->is("x01_gamestart")) {
 		// Le funny hardcoded louie day 1 position
 		Navi* louie = naviMgr->getAt(NAVIID_Louie);
-		Vector3f pos(LOUIE_START_X, LOUIE_START_Y, LOUIE_START_Z);
-		louie->mFaceDir = roundAng(LOUIE_START_DIR);
-		pos.y           = mapMgr->getMinY(pos);
-		louie->setPosition(pos, false);
+		Vector3f louie_pos(-357.18f, 0.0f, 2900.0f);
+		louie->mFaceDir = roundAng(150);
+		louie_pos.y           = mapMgr->getMinY(louie_pos);
+		louie->setPosition(louie_pos, false);
 		louie->mFsm->start(louie, 0, nullptr);
 	}
 
