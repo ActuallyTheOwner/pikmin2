@@ -1,4 +1,11 @@
-Pikmin 2  
+Pikmin 2  TWEAKED
+Modified from https://github.com/Drought-Ender/go-here-test/
+which Adapted from https://github.com/woodfrog/FibonacciHeap/tree/master
+
+Please do NOT run Ninja while making this project, as Project Piki does not link files correctly
+Use make instead.
+
+
 [![Build Status]][actions] [![Code Progress]][progress] [![Data Progress]][progress] [![Linked Progress]][progress] [![Discord Badge]][discord]
 =============
 
