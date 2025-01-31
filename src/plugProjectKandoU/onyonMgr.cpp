@@ -1208,9 +1208,9 @@ void Onyon::doEmit(Creature* seed, bool isSetAngle)
 	layFX.create(&arg);
 	seed->setPosition(onyonpos, false);
 
-	if (gameSystem->isStoryMode() && moviePlayer->mFlags.isSet(1) && moviePlayer->isPlaying("x18_exp_pellet")) {
-		seed->movie_begin(0);
-	}
+	// if (gameSystem->isStoryMode() && moviePlayer->mFlags.isSet(1) && moviePlayer->isPlaying("x18_exp_pellet")) {
+	// 	seed->movie_begin(0);
+	// }
 
 	f32 angle;
 	if (gameSystem->isVersusMode()) {

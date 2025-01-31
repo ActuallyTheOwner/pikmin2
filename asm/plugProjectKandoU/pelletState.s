@@ -68,7 +68,7 @@ lbl_constructor:
 .endobj lbl_8047F588
 .balign 4
 .obj lbl_8047F59C, local
-	.asciz "x18_exp_pellet"
+	#.asciz "x18_exp_pellet"
 .endobj lbl_8047F59C
 .balign 4
 .obj lbl_8047F5AC, local

@@ -7,6 +7,7 @@
 
 // Maximum number of creatures that can be actively stuck to something at once.
 // If you increase the max pikmin count for a mod, increase this too.
+// MAX_PIKI_COUNT
 #define MAX_STICKERS 110
 
 namespace Game {

@@ -8836,19 +8836,19 @@ lbl_constructor:
 /* 80146BBC 00143AFC  48 00 2A 29 */	bl getThrowHeight__Q24Game4PikiFv
 /* 80146BC0 00143B00  88 1E 02 B8 */	lbz r0, 0x2b8(r30)
 /* 80146BC4 00143B04  2C 00 00 03 */	cmpwi r0, 3
-/* 80146BC8 00143B08  40 82 00 0C */	bne .L_80146BD4
+/* 80146BC8 00143B08  40 82 00 0C */	bne .L_80146BD4				#Non purple check?
 /* 80146BCC 00143B0C  C0 02 9F E8 */	lfs f0, lbl_80518348@sda21(r2)
 /* 80146BD0 00143B10  EF DE 00 32 */	fmuls f30, f30, f0
 .L_80146BD4:
 /* 80146BD4 00143B14  EC 01 F0 24 */	fdivs f0, f1, f30
 /* 80146BD8 00143B18  80 6D 93 F0 */	lwz r3, _aiConstants__4Game@sda21(r13)
 /* 80146BDC 00143B1C  C0 42 9F E8 */	lfs f2, lbl_80518348@sda21(r2)
-/* 80146BE0 00143B20  2C 00 00 03 */	cmpwi r0, 3
+/* 80146BE0 00143B20  2C 00 00 03 */	cmpwi r0, 3					#Some purple check
 /* 80146BE4 00143B24  C0 63 00 28 */	lfs f3, 0x28(r3)
 /* 80146BE8 00143B28  EC 22 00 F2 */	fmuls f1, f2, f3
 /* 80146BEC 00143B2C  EF DE 00 7A */	fmadds f30, f30, f1, f0
 /* 80146BF0 00143B30  EC 7E 18 24 */	fdivs f3, f30, f3
-/* 80146BF4 00143B34  40 82 00 08 */	bne .L_80146BFC
+/* 80146BF4 00143B34  40 82 00 08 */	bne .L_80146BFC			#Non purple dist calc
 /* 80146BF8 00143B38  EC 63 00 B2 */	fmuls f3, f3, f2
 .L_80146BFC:
 /* 80146BFC 00143B3C  C0 02 A0 A4 */	lfs f0, lbl_80518404@sda21(r2)

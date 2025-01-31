@@ -247,6 +247,10 @@ bool GameState::check_DemoInout(SingleGameSection* game)
 	    && (!playData->isDemoFlag(DEMO_Whites_In_Ship) && (0 < playData->mPikiContainer.getColorSum(White)))) {
 		playData->setDemoFlag(DEMO_Whites_In_Ship);
 
+		if (!playData->isDemoFlag(DEMO_Reds_In_Onion)){
+			playData->setDemoFlag(DEMO_Reds_In_Onion);
+		}
+
 		char* name = const_cast<char*>(game->mCurrentCourseInfo->mName);
 		MoviePlayArg moviePlayArg("g29_inout_white", name, game->mMovieFinishCallback, 0);
 
@@ -258,25 +262,25 @@ bool GameState::check_DemoInout(SingleGameSection* game)
 		return true;
 	}
 
-	if (gameSystem->isFlag(GAMESYS_IsGameWorldActive)
-	    && (!playData->isDemoFlag(DEMO_Reds_In_Onion) && (0 < playData->mPikiContainer.getColorSum(Red)))) {
-		playData->setDemoFlag(DEMO_Reds_In_Onion);
+	// if (gameSystem->isFlag(GAMESYS_IsGameWorldActive)
+	//     && (!playData->isDemoFlag(DEMO_Reds_In_Onion) && (0 < playData->mPikiContainer.getColorSum(Red)))) {
+	// 	playData->setDemoFlag(DEMO_Reds_In_Onion);
 
-		char* name = const_cast<char*>(game->mCurrentCourseInfo->mName);
-		MoviePlayArg moviePlayArg("g2C_inout_red", name, game->mMovieFinishCallback, 0);
+	// 	char* name = const_cast<char*>(game->mCurrentCourseInfo->mName);
+	// 	MoviePlayArg moviePlayArg("g2C_inout_red", name, game->mMovieFinishCallback, 0);
 
-		Onyon* redOnyon = ItemOnyon::mgr->getOnyon(Red);
-		if (redOnyon) {
-			redOnyon->movie_begin(false);
-		}
+	// 	Onyon* redOnyon = ItemOnyon::mgr->getOnyon(Red);
+	// 	if (redOnyon) {
+	// 		redOnyon->movie_begin(false);
+	// 	}
 
-		if (ItemOnyon::mgr->mUfo) {
-			ItemOnyon::mgr->mUfo->movie_begin(false);
-		}
+	// 	if (ItemOnyon::mgr->mUfo) {
+	// 		ItemOnyon::mgr->mUfo->movie_begin(false);
+	// 	}
 
-		moviePlayer->play(moviePlayArg);
-		return true;
-	}
+	// 	moviePlayer->play(moviePlayArg);
+	// 	return true;
+	// }
 
 	return false;
 }
@@ -292,41 +296,43 @@ void GameState::on_section_fadeout(SingleGameSection*) { mDoExit = 1; }
  * @note Size: 0xB28
  */
 void GameState::on_demo_timer(SingleGameSection* game, u32 id)
-{
+{	
 	// Yes its not a switch
-	if (id == DEMOTIMER_YouAppearLost) {
-		ItemDownFloor::Item* bagObj = nullptr;
-		Iterator<BaseItem> iterator(ItemDownFloor::mgr);
-		CI_LOOP(iterator)
-		{
-			ItemDownFloor::Item* dwfl = static_cast<ItemDownFloor::Item*>(*iterator);
-			if (dwfl->mBagMaxWeight == 15) {
-				bagObj = dwfl;
-			}
-		}
-		JUT_ASSERTLINE(1025, bagObj, "no down floor 20\n"); // This panic seems to imply the bag once weighed 20 instead of 15
+	// if (id == DEMOTIMER_YouAppearLost) {
+	// 	ItemDownFloor::Item* bagObj = nullptr;
+	// 	Iterator<BaseItem> iterator(ItemDownFloor::mgr);
+	// 	CI_LOOP(iterator)
+	// 	{
+	// 		ItemDownFloor::Item* dwfl = static_cast<ItemDownFloor::Item*>(*iterator);
+	// 		if (dwfl->mBagMaxWeight == 15) {
+	// 			bagObj = dwfl;
+	// 		}
+	// 	}
+	// 	JUT_ASSERTLINE(1025, bagObj, "no down floor 20\n"); // This panic seems to imply the bag once weighed 20 instead of 15
 
-		MoviePlayArg moviePlayArg("x17_join_guide", nullptr, nullptr, 0);
-		moviePlayArg.mOrigin       = bagObj->getPosition();
-		moviePlayArg.mAngle        = bagObj->getFaceDir();
-		moviePlayer->mTargetObject = bagObj;
-		moviePlayer->play(moviePlayArg);
-		gameSystem->mSection->disableTimer(DEMOTIMER_YouAppearLost);
-	}
+	// 	MoviePlayArg moviePlayArg("x17_join_guide", nullptr, nullptr, 0);
+	// 	moviePlayArg.mOrigin       = bagObj->getPosition();
+	// 	moviePlayArg.mAngle        = bagObj->getFaceDir();
+	// 	moviePlayer->mTargetObject = bagObj;
+	// 	moviePlayer->play(moviePlayArg);
+	// 	//gameSystem->mSection->disableTimer(DEMOTIMER_YouAppearLost);
+	// }
 	if (id == DEMOTIMER_Reds_Purples_Tutorial) {
-		Navi* navi = naviMgr->getActiveNavi();
-		if (!navi) {
-			int id = 1;
-			if (!gameSystem->mSection->mPrevNaviIdx)
-				id = 0;
-			navi = naviMgr->getAt(id);
-		}
+		
+
+		// Navi* navi = naviMgr->getActiveNavi();
+		// if (!navi) {
+		// 	int id = 1;
+		// 	if (!gameSystem->mSection->mPrevNaviIdx)
+		// 		id = 0;
+		// 	navi = naviMgr->getAt(id);
+		// }
 		playData->setDemoFlag(DEMO_Reds_Purples_Tutorial);
-		MoviePlayArg moviePlayArg("x15_exp_x", nullptr, nullptr, 0);
-		moviePlayArg.mOrigin       = navi->getPosition();
-		moviePlayArg.mAngle        = navi->getFaceDir();
-		moviePlayer->mTargetObject = navi;
-		moviePlayer->play(moviePlayArg);
+		// MoviePlayArg moviePlayArg("x15_exp_x", nullptr, nullptr, 0);
+		// moviePlayArg.mOrigin       = navi->getPosition();
+		// moviePlayArg.mAngle        = navi->getFaceDir();
+		// moviePlayer->mTargetObject = navi;
+		// moviePlayer->play(moviePlayArg);
 		gameSystem->mSection->disableTimer(DEMOTIMER_Reds_Purples_Tutorial);
 	}
 	if (id == DEMOTIMER_Meet_Red_Pikmin) {
@@ -366,7 +372,7 @@ void GameState::on_demo_timer(SingleGameSection* game, u32 id)
 		playData->setDemoFlag(DEMO_Unlock_Captain_Switch);
 	 	game->disableTimer(DEMOTIMER_Unlock_Switch_To_Louie);
 	}
-	if (id == DEMOTIMER_Piki_Seed_In_Ground) {
+	//if (id == DEMOTIMER_Piki_Seed_In_Ground) {
 		// if (!playData->isDemoFlag(DEMO_Pluck_First_Pikmin)) {
 		// 	ItemPikihead::Item* seed = nullptr;
 		// 	Iterator<ItemPikihead::Item> iterator(ItemPikihead::mgr);
@@ -382,8 +388,9 @@ void GameState::on_demo_timer(SingleGameSection* game, u32 id)
 		// 	moviePlayer->play(moviePlayArg);
 		// 	playData->setDemoFlag(DEMO_Pluck_First_Pikmin);
 		// }
-		game->disableTimer(DEMOTIMER_Piki_Seed_In_Ground);
-	} else if (id == DEMOTIMER_Camera_Tutorial) {
+		//game->disableTimer(DEMOTIMER_Piki_Seed_In_Ground);
+	//}  
+	else if (id == DEMOTIMER_Camera_Tutorial) {
 		if (!playData->isDemoFlag(DEMO_UNUSED_Camera_Demo)) {
 			if (naviMgr->getActiveNavi()) {
 				char* name = const_cast<char*>(game->mCurrentCourseInfo->mName);
@@ -535,6 +542,23 @@ void GameState::exec(SingleGameSection* game)
 		return;
 	}
 
+	if(!playData->isDemoFlag(Game::DEMO_First_Sunset_Warning)){
+		if(13.000000 <= gameSystem->mTimeMgr->mCurrentTimeOfDay){
+			Navi* navi = naviMgr->getActiveNavi();
+			if (!navi) {
+				int id = 1;
+				if (!gameSystem->mSection->mPrevNaviIdx)
+					id = 0;
+				navi = naviMgr->getAt(id);
+			}
+			MoviePlayArg moviePlayArg("g09_first_sunset", nullptr, nullptr, 0);
+			moviePlayArg.mDelegateStart = game->mMovieStartCallback;
+			moviePlayArg.mOrigin        = navi->getPosition();
+			moviePlayArg.mAngle         = navi->getFaceDir();
+			moviePlayer->play(moviePlayArg);
+			playData->setDemoFlag(Game::DEMO_First_Sunset_Warning);
+		}
+	}
 	// Check need pikmin extinction to occur
 	if (!mIsPostExtinct && moviePlayer->mDemoState == DEMOSTATE_Inactive) {
 		if (GameStat::getAllPikmins(AllPikminCalcs) - GameStat::getZikatuPikmins(AllPikminCalcs) == 0 && playData->hasBootContainer(Red)) {
@@ -732,7 +756,7 @@ void GameState::onMovieDone(SingleGameSection* game, MovieConfig* config, u32, u
 	if (config->is("x01_gamestart")) {
 		// Le funny hardcoded louie day 1 position
 		Navi* louie = naviMgr->getAt(NAVIID_Louie);
-		Vector3f louie_pos(-357.18f, 0.0f, 2900.0f);
+		Vector3f louie_pos(424.39837600f, 125.00000f ,2897.115967f);
 		louie->mFaceDir = roundAng(150);
 		louie_pos.y           = mapMgr->getMinY(louie_pos);
 		louie->setPosition(louie_pos, false);

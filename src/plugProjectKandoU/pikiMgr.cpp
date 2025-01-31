@@ -16,8 +16,6 @@
 
 namespace Game {
 
-static const int unusedPikiMgrArray[] = { 0, 0, 0 };
-
 bool PikiMgr::throwPikiDebug = false;
 PikiMgr* pikiMgr;
 int PikiMgr::mBirthMode = PikiMgr::PSM_Normal;
