@@ -33,7 +33,7 @@ AlteredMapMenu::AlteredMapMenu(const char* name) : og::newScreen::ObjSMenuMap(na
 	mStartWPIndex = -1;
 }
 
-void AlteredMapMenu::doCreate(JKRArchive* rarc) {
+void AlteredMapMenu::doCreate(JKRArchive* archive) {
 	mAllPikisBlue = false;
 	mCanStartPathfind = false;
 	mHasNoPath = false;
@@ -42,7 +42,7 @@ void AlteredMapMenu::doCreate(JKRArchive* rarc) {
 	mStartPathFindCounter = 0;
 	mPathfindState = PATHFIND_INACTIVE;
 
-	og::newScreen::ObjSMenuMap::doCreate(rarc);
+	og::newScreen::ObjSMenuMap::doCreate(archive);
 
 	LoadResource::Arg first (cAButtonPath);
 	LoadResource::Arg second (cBlueArrowPath);

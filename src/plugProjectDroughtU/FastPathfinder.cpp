@@ -35,10 +35,8 @@ inline Game::WayPoint* getWaypoint(s16 idx) {
 }
 
 static f32 heuristic(s16 first, s16 second) {
-    f32 XZDistance = getWaypoint(first)->mPosition.sqrDistance(getWaypoint(second)->mPosition);
-    // f32 heightDifference = getWaypoint(first)->mPosition.y - getWaypoint(second)->mPosition.y;
-    // f32 sqrHeight = heightDifference;
-    return XZDistance;
+    f32 sqrDistance2D = getWaypoint(first)->mPosition.sqrDistance(getWaypoint(second)->mPosition);
+    return sqrDistance2D;
 }
 
 Path::Path() {
