@@ -7,10 +7,10 @@
 #include "Drought/Pathfinder.h"
 #include "Game/CPlate.h"
 
-namespace Game
-{
+namespace Game {
 
-bool CheckAllPikisBlue(Navi* navi) {
+bool AreAllPikisBlue(Navi* navi)
+{
 	Iterator<Creature> iterator(navi->mCPlateMgr);
 	CI_LOOP(iterator)
 	{
@@ -55,19 +55,21 @@ void NaviFSM::init(Navi* navi)
 	registerState(new NaviClimbState);
 	registerState(new NaviPathMoveState);
 	// added state
-    registerState(new NaviGoHereState);
+	registerState(new NaviGoHereState);
 }
 
-void NaviGoHereState::init(Navi* navi, StateArg* arg) {
-    P2ASSERT(arg);
-    NaviGoHereStateArg* goHereArg = static_cast<NaviGoHereStateArg*>(arg);
+void NaviGoHereState::init(Navi* navi, StateArg* arg)
+{
+	P2ASSERT(arg);
+	NaviGoHereStateArg* goHereArg = static_cast<NaviGoHereStateArg*>(arg);
 
 	navi->startMotion(IPikiAnims::WALK, IPikiAnims::WALK, nullptr, nullptr);
 
-    mPosition            = goHereArg->mPosition;
-	mPath                = goHereArg->mPath;
-    mCurrNode            = goHereArg->mPath->mRoot;
+	mTargetPosition  = goHereArg->mPosition;
+	mPath            = goHereArg->mPath;
+	mActiveRouteNode = goHereArg->mPath->mRoot;
 
+	mTimeoutTimer = 0.0f;
 }
 
 // usually inlined, plays the navi's voice line when swapped
@@ -94,147 +96,163 @@ inline void NaviState::playChangeVoice(Navi* navi)
 	}
 }
 
-void NaviGoHereState::exec(Navi* navi) {
-    bool done = false;
+void NaviGoHereState::exec(Navi* navi)
+{
 
-	if (gameSystem && gameSystem->mIsFrozen) {
+	bool isFrozen = gameSystem && gameSystem->mIsFrozen;
+	if (isFrozen || !navi->isAlive()) {
 		navi->mVelocity = 0.0f;
 		return;
 	}
 
-    if (mCurrNode) {
-        execMove(navi);
-    }
-    else {
-        done = execMoveGoal(navi);
-    }
+	bool navSuccess = false;
+	if (mActiveRouteNode) {
+		navigateToWayPoint(navi);
+	} else {
+		navSuccess = navigateToFinalPoint(navi);
+	}
 
-    if (navi->mController1) {
+	// If we haven't moved in a while, start incrementing the giveup timer
+	f32 distanceBetweenLast = (navi->getPosition() - mLastPosition).qLength2D();
+	if (distanceBetweenLast <= 0.3f) {
+		mTimeoutTimer += sys->mDeltaTime;
+
+		// We've been trying for a little while, idk if we can do this
+		if (mTimeoutTimer >= 3.5f) {
+			navi->mFsm->transit(navi, NSID_Change, nullptr);
+			PSSystem::spSysIF->playSystemSe(PSSE_PL_ORIMA_DAMAGE, 0);
+			return;
+		}
+	}
+
+	mLastPosition = navi->getPosition();
+
+	if (navi->mController1) {
 		navi->mWhistle->update(navi->mVelocity, false);
 
-        if (!gameSystem->paused_soft() && moviePlayer->mDemoState == 0 && navi->mController1->isButtonDown(JUTGamePad::PRESS_B)) {
-            done = true;
-        }
+		if (!gameSystem->paused_soft() && moviePlayer->mDemoState == 0 && navi->mController1->isButtonDown(JUTGamePad::PRESS_B)) {
+			navSuccess = true;
+		}
 
 		// swaps captains
-        if (!gameSystem->paused_soft() && moviePlayer->mDemoState == 0 && !gameSystem->isMultiplayerMode() &&
-            navi->mController1->isButtonDown(JUTGamePad::PRESS_Y) && playData->isDemoFlag(DEMO_Unlock_Captain_Switch)) {
+		if (!gameSystem->paused_soft() && moviePlayer->mDemoState == 0 && !gameSystem->isMultiplayerMode()
+		    && navi->mController1->isButtonDown(JUTGamePad::PRESS_Y) && playData->isDemoFlag(DEMO_Unlock_Captain_Switch)) {
 
-            Navi* currNavi = naviMgr->getAt(GET_OTHER_NAVI(navi));
-            int currID     = currNavi->getStateID();
+			Navi* currNavi = naviMgr->getAt(GET_OTHER_NAVI(navi));
+			int currID     = currNavi->getStateID();
 
-            if (currNavi->isAlive() && currID != NSID_Nuku && currID != NSID_NukuAdjust && currID != NSID_Punch) {
-                gameSystem->mSection->pmTogglePlayer();
+			if (currNavi->isAlive() && currID != NSID_Nuku && currID != NSID_NukuAdjust && currID != NSID_Punch) {
+				gameSystem->mSection->pmTogglePlayer();
 
-                playChangeVoice(currNavi);
+				playChangeVoice(currNavi);
 
-                currNavi->getStateID(); // commented out code probably.
+				if (currNavi->mCurrentState->needYChangeMotion()) {
+					currNavi->mFsm->transit(currNavi, NSID_Change, nullptr);
+				}
+			}
+		}
+	}
 
-                if (currNavi->mCurrentState->needYChangeMotion()) {
-                    currNavi->mFsm->transit(currNavi, NSID_Change, nullptr);
-                }
-            }
-        }
-    }
-
-    if (done) {
+	if (navSuccess) {
 		navi->GoHereSuccess();
-        transit(navi, NSID_Walk, nullptr);
-    }
+		transit(navi, NSID_Walk, nullptr);
+	}
 }
 
 // moves the navi to the nearest waypoint
-bool NaviGoHereState::execMove(Navi* navi)
+void NaviGoHereState::navigateToWayPoint(Navi* navi)
 {
-	WayPoint* wp     = mapMgr->mRouteMgr->getWayPoint(mCurrNode->mWpIdx);
-	Vector3f wpPos   = wp->mPosition;
-	wpPos.y          = 0.0f;
-	Vector3f naviPos = navi->getPosition();
-	naviPos.y        = 0.0f;
-	Vector3f diff    = wpPos - naviPos;
-	f32 dist         = diff.normalise2D();
+	WayPoint* currentWaypoint = mapMgr->mRouteMgr->getWayPoint(mActiveRouteNode->mWpIdx);
 
-	if (dist < wp->mRadius) {
-		mCurrNode = mCurrNode->mNext;
+	Vector3f direction = currentWaypoint->mPosition;
+	f32 distanceToNext = Vector3f::getFlatDirectionFromTo(navi->getPosition(), direction);
 
-        if (mCurrNode) {
-            WayPoint* nextWp = mapMgr->mRouteMgr->getWayPoint(mCurrNode->mWpIdx);
-			bool wpClosed = nextWp->isFlag(WPF_Closed);
-			bool wpWater = nextWp->isFlag(WPF_Water) && !CheckAllPikisBlue(navi);
-            if (wpClosed || wpWater) {
-                mPosition = wp->getPosition();
-                mCurrNode = nullptr;
-				
-				navi->GoHereInterupted();
-				if (wpWater) {
-					navi->GoHereInteruptWater();
-				}
-				else {
-					navi->GoHereInteruptBlocked();
-				}
-            }
-        }
+	// if the navi is close enough to the waypoint, move to the next one
+	if (distanceToNext >= currentWaypoint->mRadius) {
+		navi->makeCStick(true);
 
-        return true;
+		// Look at the waypoint
+		const f32 interp = 0.1f;
+		navi->mFaceDir += interp * angDist(JMAAtan2Radian(direction.x, direction.z), navi->mFaceDir);
+		navi->mFaceDir = roundAng(navi->mFaceDir);
+
+		navi->mTargetVelocity.x = direction.x * mMoveSpeed;
+		navi->mTargetVelocity.z = direction.z * mMoveSpeed;
+		return;
 	}
-	
-    navi->makeCStick(true);
 
-    
+	mActiveRouteNode = mActiveRouteNode->mNext;
+	if (!mActiveRouteNode) {
+		return;
+	}
 
-    navi->mFaceDir += 0.2f * angDist(JMAAtan2Radian(diff.x, diff.z), navi->mFaceDir);
-    navi->mFaceDir = roundAng(navi->mFaceDir);
+	WayPoint* nextWp = mapMgr->mRouteMgr->getWayPoint(mActiveRouteNode->mWpIdx);
 
-	navi->mVelocity.x = diff.x * 150.0f;
-	navi->mVelocity.z = diff.z * 150.0f;
-	return false;
+	// if the next waypoint isn't closed, don't stop
+	bool stopAtClosed = nextWp->isFlag(WPF_Closed);
+	if (!stopAtClosed) {
+		return;
+	}
+
+	// If the waypoint is in water, and we don't have all blue pikmin, stop
+	bool stopAtWater = nextWp->isFlag(WPF_Water) && !AreAllPikisBlue(navi);
+	if (!stopAtWater) {
+		return;
+	}
+
+	// We're either at a closed waypoint or a water waypoint, so stop
+	mTargetPosition  = currentWaypoint->getPosition();
+	mActiveRouteNode = nullptr;
+
+	navi->GoHereInterupted();
+	if (stopAtWater) {
+		navi->GoHereInteruptWater();
+	} else {
+		navi->GoHereInteruptBlocked();
+	}
 }
 
 // moves the navi to its final target destination
-bool NaviGoHereState::execMoveGoal(Navi* navi) {
-    Vector3f goalPos = mPosition;
-	goalPos.y        = 0.0f;
-	Vector3f naviPos = navi->getPosition();
-	naviPos.y        = 0.0f;
-	Vector3f diff    = goalPos - naviPos;
-	f32 dist         = diff.normalise2D();
-
-	if (dist < 15.0f) {
+bool NaviGoHereState::navigateToFinalPoint(Navi* navi)
+{
+	Vector3f direction = mTargetPosition;
+	f32 distance       = Vector3f::getFlatDirectionFromTo(navi->getPosition(), direction);
+	if (distance < mFinishDistanceThreshold) {
 		return true;
 	}
-	
-    navi->makeCStick(true);
 
-    
-    navi->mFaceDir += 0.2f * angDist(JMAAtan2Radian(diff.x, diff.z), navi->mFaceDir);
-    navi->mFaceDir = roundAng(navi->mFaceDir);
+	navi->makeCStick(true);
 
-	navi->mVelocity.x = diff.x * 150.0f;
-	navi->mVelocity.z = diff.z * 150.0f;
+	navi->mFaceDir += 0.2f * angDist(JMAAtan2Radian(direction.x, direction.z), navi->mFaceDir);
+	navi->mFaceDir = roundAng(navi->mFaceDir);
+
+	navi->mTargetVelocity.x = direction.x * mMoveSpeed;
+	navi->mTargetVelocity.z = direction.z * mMoveSpeed;
 	return false;
 }
 
-void NaviGoHereState::cleanup(Navi* navi) {
-	delete mPath;
-	mPath     = nullptr;
-	mCurrNode = nullptr;
+void NaviGoHereState::cleanup(Navi* navi)
+{
+	if (mPath) {
+		delete mPath;
+		mPath = nullptr;
+	}
+
+	if (mActiveRouteNode) {
+		delete mActiveRouteNode;
+		mActiveRouteNode = nullptr;
+	}
 }
 
-
-void Navi::GoHereSuccess() {
+void Navi::GoHereSuccess()
+{
 	// your code here
 }
 
-void Navi::GoHereInterupted() {
+void Navi::GoHereInterupted() { }
 
-}
+void Navi::GoHereInteruptBlocked() { }
 
-void Navi::GoHereInteruptBlocked() {
-
-}
-
-void Navi::GoHereInteruptWater() {
-	
-}
+void Navi::GoHereInteruptWater() { }
 
 } // namespace Game

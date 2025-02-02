@@ -3,50 +3,45 @@
 
 #include "Game/pathfinder.h"
 
-namespace Drought
-{
+namespace Drought {
 
-struct PathNode
-{
-    PathNode(s16);
-    PathNode* mNext;
+struct PathNode {
+	PathNode(s16);
+	PathNode* mNext;
 
-    s16 mWpIdx;
+	s16 mWpIdx;
 
-    ~PathNode() {
-        if (mNext) {
-            delete mNext;
-        }
-    }
+	~PathNode()
+	{
+		if (mNext) {
+			delete mNext;
+		}
+	}
 };
 
-struct Path
-{
-    Path();
-    PathNode* mRoot;
+struct Path {
+	Path();
 
-    void prepend(PathNode* node);
+	~Path()
+	{
+		if (mRoot) {
+			delete mRoot;
+		}
+	}
 
-    f32 getDistance();
+	void prepend(PathNode* node);
 
-    ~Path() {
-        if (mRoot) {
-            delete mRoot;
-        }
-    }
+	f32 getDistance();
+
+	PathNode* mRoot;
 };
 
-
-namespace Pathfinder
-{
+namespace Pathfinder {
 
 u32 search_fast(s16 start, s16 end, Path&, u8);
 
 } // namespace Pathfinder
 
-
 } // namespace Drought
-
-
 
 #endif

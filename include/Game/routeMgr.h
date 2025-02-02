@@ -157,7 +157,7 @@ struct WPSearchArg {
 };
 
 struct WPEdgeSearchArg {
-	WPEdgeSearchArg(Vector3f& startPos)
+	WPEdgeSearchArg(const Vector3f& startPos)
 	{
 		mWp2           = nullptr;
 		mWp1           = nullptr;
@@ -178,8 +178,7 @@ struct WPEdgeSearchArg {
 };
 
 struct RouteMgr : public Container<WayPoint> {
-	struct SonarArg {
-	};
+	struct SonarArg { };
 
 	RouteMgr();
 

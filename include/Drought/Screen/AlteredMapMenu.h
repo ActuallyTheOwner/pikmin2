@@ -5,80 +5,72 @@
 #include "Game/routeMgr.h"
 #include "Drought/Pathfinder.h"
 
-namespace Drought
-{
+namespace Drought {
 
-namespace Screen
-{
+namespace Screen {
 
-struct AlteredMapMenu : public og::newScreen::ObjSMenuMap
-{
-    AlteredMapMenu(const char*);
-    virtual void doDraw(Graphics& gfx);
-    virtual bool doUpdate();
-    virtual bool doStart(const ::Screen::StartSceneArg*);
-    virtual void doCreate(JKRArchive*);
-    virtual void commonUpdate();
-    virtual bool doEnd(const ::Screen::EndSceneArg*);
+struct AlteredMapMenu : public og::newScreen::ObjSMenuMap {
+	AlteredMapMenu(const char* name)
+	    : og::newScreen::ObjSMenuMap(name)
+	{
+		mStartWPIndex = -1;
+	}
 
-    void PathfindUpdate();
-    void OnPathfindDone();
-    void PathfindCleanup();
-    void drawPath(Graphics& gfx);
+	virtual void doDraw(Graphics& gfx);
+	virtual bool doUpdate();
+	virtual bool doStart(const ::Screen::StartSceneArg*);
+	virtual void doCreate(JKRArchive*);
+	virtual void commonUpdate();
+	virtual bool doEnd(const ::Screen::EndSceneArg*);
 
-    bool CheckMapMove();
+	void PathfindUpdate();
+	void OnPathfindDone();
+	void RenderPath(Graphics& gfx);
 
-    void NodeCleanup();
+	bool HasMapInputChanged();
 
-    Vector3f GetPositionFromTex(f32 x, f32 y);
-    Vector2f GetPositionOnTex(Vector3f& pos);
+	Vector3f GetPositionFromTex(f32 x, f32 y);
+	Vector2f GetPositionOnTex(Vector3f& pos);
 
-    static bool CheckCanStartPathfind(Game::Navi* navi);
+	static bool IsPathfindingAllowed(Game::Navi* navi);
 
-    void setupTextureDraw(Graphics& gfx);
+	void setupTextureDraw(Graphics& gfx);
 
-    void drawArrow(Graphics& gfx);
-    void drawButton(Graphics& gfx);
+	void drawArrow(Graphics& gfx);
+	void drawButton(Graphics& gfx);
 
+	void initPathfinding(bool);
+	int execPathfinding();
 
-    void initPathfinding(bool);
-    int execPathfinding();
+	enum PathfindState {
+		PATHFIND_INACTIVE    = -1,
+		PATHFIND_IN_PROGRESS = 0,
+		PATHFIND_FINISHED    = 1,
+		PATHFIND_GOHERE      = 2,
+	};
 
-    enum PathfindState {
-        PATHFIND_INACTIVE = -1,
-        PATHFIND_AWAITING = 0,
-        PATHFIND_DONE     = 1,
-        PATHFIND_GOHERE   = 2
-    };
+	bool mCanStartPathfind;
+	bool mHasNoPath;
+	bool mPathfindSuccess;
+	bool mAllPikisBlue;
+	s16 mStartWPIndex;
+	s16 mGoalWPIndex;
+	int mStartPathFindCounter;
+	PathfindState mPathfindState;
+	u32 mWayPointCount;
+	Path* mPath;
 
-    bool mCanStartPathfind;
-    bool mHasNoPath;
-    bool mPathfindBlue;
-    bool mAllPikisBlue;
-    s16 mStartWPIndex;
-    s16 mGoalWPIndex;
-    int mStartPathFindCounter;
-    PathfindState mPathfindState;
-    u32 mWayPointCount;
-    Path* mPath;
+	ResTIMG* mAButtonTex;
+	ResTIMG* mArrowTex;
+	ResTIMG* mArrowRedTex;
 
-    ResTIMG* mAButtonTex;
-    ResTIMG* mArrowTex;
-    ResTIMG* mArrowRedTex;
-
-    JUTTexture* mArrowPicture;
-    JUTTexture* mArrowRedPicture;
-    JUTTexture* mAButton;
+	JUTTexture* mArrowPicture;
+	JUTTexture* mArrowRedPicture;
+	JUTTexture* mAButton;
 };
-
-
 
 } // namespace Screen
 
-
-
 } // namespace Drought
-
-
 
 #endif

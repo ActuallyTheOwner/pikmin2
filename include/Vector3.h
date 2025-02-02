@@ -29,8 +29,8 @@ struct Vector3 {
 
 	// Assignment Operators
 	inline Vector3& operator=(const Vector3& other);
-	inline void operator    =(Vector3& other);
-	inline void operator    =(const Vec& other);
+	inline void operator=(Vector3& other);
+	inline void operator=(const Vec& other);
 
 	// Conversion Operators
 	inline operator Vector2<T>() const;
@@ -70,6 +70,7 @@ struct Vector3 {
 	// Direction Functions
 	static inline T getDirectionFromTo(const Vector3& from, Vector3& to);
 	static inline T getFlatDirectionFromTo(Vector3& from, Vector3& to);
+	static inline T getFlatDirectionFromTo(const Vector3& from, Vector3& to);
 	inline T setDirectionFromTo(const Vector3& from, const Vector3& to);
 	inline void setFlatDirectionFromTo(Vector3& from, Vector3& to);
 	inline void toFlatDirection();
@@ -187,6 +188,14 @@ inline T Vector3<T>::getDirectionFromTo(const Vector3& from, Vector3& to)
 
 template <typename T>
 inline T Vector3<T>::getFlatDirectionFromTo(Vector3& from, Vector3& to)
+{
+	to -= from;
+	to.y = 0.0f;
+	return to.normalise();
+}
+
+template <typename T>
+inline T Vector3<T>::getFlatDirectionFromTo(const Vector3& from, Vector3& to)
 {
 	to -= from;
 	to.y = 0.0f;
