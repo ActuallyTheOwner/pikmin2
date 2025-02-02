@@ -5,32 +5,31 @@
 #include "Game/NaviState.h"
 #include "Drought/Pathfinder.h"
 
-namespace Game
-{
+namespace Game {
 
 /* setting this to true will have the navi still
- * attempt to route through water if it 
+ * attempt to route through water if it
  * has non-blue pikmin */
 const bool cTryRouteWater = false;
 
-bool CheckAllPikisBlue(Game::Navi* navi);
+bool AreAllPikisBlue(Game::Navi* navi);
 
-struct NaviGoHereStateArg : public StateArg
-{
-    inline NaviGoHereStateArg(Vector3f pos, Drought::Path* path) 
-        : mPosition(pos)
-        , mPath(path)
-    {
-    }
+struct NaviGoHereStateArg : public StateArg {
+	inline NaviGoHereStateArg(Vector3f pos, Drought::Path* path)
+	    : mPosition(pos)
+	    , mPath(path)
+	{
+	}
 
-    Vector3f mPosition;
-    Drought::Path* mPath;
+	Vector3f mPosition;
+	Drought::Path* mPath;
 };
-
 
 struct NaviGoHereState : public NaviState {
 	inline NaviGoHereState()
 	    : NaviState(NSID_GoHere)
+	    , mMoveSpeed(150.0f)
+	    , mFinishDistanceThreshold(15.0f)
 	{
 	}
 
@@ -39,17 +38,20 @@ struct NaviGoHereState : public NaviState {
 	virtual void cleanup(Navi*);         // _10
 	virtual bool callable() { return true; }
 
-	bool execMove(Navi*);
-	bool execMoveGoal(Navi*);
+	void navigateToWayPoint(Navi*);
+	bool navigateToFinalPoint(Navi*);
 
-	// _00     = VTBL
-	// _00-_10 = NaviState
-	Vector3f mPosition;       // _14
-	Drought::PathNode* mCurrNode;
+	const f32 mMoveSpeed;
+	const f32 mFinishDistanceThreshold;
+
+	f32 mTimeoutTimer; // The time in seconds before the navi gives up on the path
+	Vector3f mLastPosition;
+
+	Vector3f mTargetPosition;
+	Drought::PathNode* mActiveRouteNode;
 	Drought::Path* mPath;
 };
-    
-} // namespace Game
 
+} // namespace Game
 
 #endif
