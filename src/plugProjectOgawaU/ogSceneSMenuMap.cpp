@@ -1,5 +1,5 @@
 #include "Drought/Screen/AlteredMapMenu.h"
-#include "og/newScreen/SMenu.h"
+#include "og/newScreen/SMenu.h" //Vulcan said not to remove
 #include "LoadResource.h"
 #include "nans.h"
 

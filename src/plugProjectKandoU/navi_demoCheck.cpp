@@ -251,15 +251,15 @@ bool Navi::demoCheck()
 					Sys::Sphere bound(pelletPosition, currentPellet->getBottomRadius() + sFirstTreasureTriggerSize);
 
 					if (checkDemoNaviAndPiki(bound)) {
-						MoviePlayArg arg("g04_find_treasure", nullptr, nullptr, 0);
+						//MoviePlayArg arg("g04_find_treasure", nullptr, nullptr, 0);
 
-						arg.mOrigin = currentPellet->getPosition();
+						//arg.mOrigin = currentPellet->getPosition();
 
-						Vector3f forwardVec;
-						currentPellet->mBaseTrMatrix.getBasis(2, forwardVec);
-						arg.mAngle                 = JMAAtan2Radian(forwardVec.x, forwardVec.z);
-						moviePlayer->mTargetObject = currentPellet;
-						moviePlayer->play(arg);
+						//Vector3f forwardVec;
+						//currentPellet->mBaseTrMatrix.getBasis(2, forwardVec);
+						//arg.mAngle                 = JMAAtan2Radian(forwardVec.x, forwardVec.z);
+						//moviePlayer->mTargetObject = currentPellet;
+						//moviePlayer->play(arg);
 						playData->setDemoFlag(DEMO_Discover_Treasure);
 						return true;
 					}

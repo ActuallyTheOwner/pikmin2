@@ -24,15 +24,17 @@ const bool cAllowMapRotation = false;
 
 void AlteredMapMenu::doCreate(JKRArchive* rarc)
 {
+
 	mAllPikisBlue         = false;
 	mCanStartPathfind     = false;
 	mHasNoPath            = false;
 	mPathfindSuccess      = true;
 	mGoalWPIndex          = -1;
+
 	mStartPathFindCounter = 0;
 	mPathfindState        = PATHFIND_INACTIVE;
 
-	og::newScreen::ObjSMenuMap::doCreate(rarc);
+	og::newScreen::ObjSMenuMap::doCreate(archive);
 
 	LoadResource::Arg first(cAButtonPath);
 	LoadResource::Arg second(cBlueArrowPath);

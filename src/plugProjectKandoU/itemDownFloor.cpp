@@ -762,7 +762,7 @@ void DownState::onKeyEvent(Item* item, SysShape::KeyEvent const&)
 		}
 
 		if (!playData->isDemoFlag(DEMO_Reunite_Captains)) {
-			Navi* navi = naviMgr->getAt(NAVIID_Louie);
+			Navi* navi = naviMgr->getAt(NAVIID_Olimar);
 			MoviePlayArg playArg("x06_join", nullptr, nullptr, 0);
 			playArg.mOrigin            = navi->getPosition();
 			playArg.mAngle             = navi->getFaceDir();

@@ -8618,18 +8618,18 @@ lbl_constructor:
 .L_8018F750:
 /* 8018F750 0018C690  88 1F 02 B8 */	lbz r0, 0x2b8(r31)
 /* 8018F754 0018C694  2C 00 00 03 */	cmpwi r0, 3
-/* 8018F758 0018C698  40 82 00 34 */	bne .L_8018F78C
+/* 8018F758 0018C698  40 82 00 34 */	bne .L_8018F78C			#If not Purples, don't target a ground pound
 /* 8018F75C 0018C69C  C0 3F 02 04 */	lfs f1, 0x204(r31)
 /* 8018F760 0018C6A0  C0 02 AA 80 */	lfs f0, lbl_80518DE0@sda21(r2)
 /* 8018F764 0018C6A4  FC 01 00 40 */	fcmpo cr0, f1, f0
 /* 8018F768 0018C6A8  4C 40 13 82 */	cror 2, 0, 2
-/* 8018F76C 0018C6AC  40 82 00 20 */	bne .L_8018F78C
+/* 8018F76C 0018C6AC  40 82 00 20 */	bne .L_8018F78C			#If this function is removed, purples don't toss
 /* 8018F770 0018C6B0  81 83 00 00 */	lwz r12, 0(r3)
 /* 8018F774 0018C6B4  38 A0 00 12 */	li r5, 0x12
 /* 8018F778 0018C6B8  38 C0 00 00 */	li r6, 0
 /* 8018F77C 0018C6BC  81 8C 00 1C */	lwz r12, 0x1c(r12)
 /* 8018F780 0018C6C0  7D 89 03 A6 */	mtctr r12
-/* 8018F784 0018C6C4  4E 80 04 21 */	bctrl 
+/* 8018F784 0018C6C4  4E 80 04 21 */	bctrl
 /* 8018F788 0018C6C8  48 00 02 F4 */	b .L_8018FA7C
 .L_8018F78C:
 /* 8018F78C 0018C6CC  80 8D 93 F0 */	lwz r4, _aiConstants__4Game@sda21(r13)
